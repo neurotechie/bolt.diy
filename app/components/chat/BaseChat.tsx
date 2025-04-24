@@ -125,6 +125,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     const [apiKeys, setApiKeys] = useState<Record<string, string>>(getApiKeysFromCookies());
     const [modelList, setModelList] = useState<ModelInfo[]>([]);
     const [isModelSettingsCollapsed, setIsModelSettingsCollapsed] = useState(false);
+    const [isTextareaCollapsed, setIsTextareaCollapsed] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
     const [transcript, setTranscript] = useState('');
@@ -432,30 +433,57 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                   <div>
                     <ClientOnly>
                       {() => (
-                        <div className={isModelSettingsCollapsed ? 'hidden' : ''}>
-                          <ModelSelector
-                            key={provider?.name + ':' + modelList.length}
-                            model={model}
-                            setModel={setModel}
-                            modelList={modelList}
-                            provider={provider}
-                            setProvider={setProvider}
-                            providerList={providerList || (PROVIDER_LIST as ProviderInfo[])}
-                            apiKeys={apiKeys}
-                            modelLoading={isModelLoading}
-                          />
-                          {(providerList || []).length > 0 &&
-                            provider &&
-                            (!LOCAL_PROVIDERS.includes(provider.name) || 'OpenAILike') && (
-                              <APIKeyManager
-                                provider={provider}
-                                apiKey={apiKeys[provider.name] || ''}
-                                setApiKey={(key) => {
-                                  onApiKeysChange(provider.name, key);
-                                }}
-                              />
+                        <>
+                          <div
+                            className="flex items-center justify-between py-2 px-1 cursor-pointer"
+                            onClick={() => setIsModelSettingsCollapsed(!isModelSettingsCollapsed)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="i-ph:gear text-lg text-bolt-elements-textSecondary" />
+                              <span className="text-sm font-medium text-bolt-elements-textSecondary">
+                                {isModelSettingsCollapsed ? 'Model: ' + model : 'Model Settings'}
+                              </span>
+                            </div>
+                            <div
+                              className={`i-ph:caret-${isModelSettingsCollapsed ? 'down' : 'up'} text-lg text-bolt-elements-textSecondary`}
+                            />
+                          </div>
+                          <div
+                            id="model-selector-wrapper"
+                            className={classNames(
+                              'overflow-hidden transition-all duration-300 ease-in-out border-t border-bolt-elements-borderColor',
+                              {
+                                'max-h-0 opacity-0 border-transparent': isModelSettingsCollapsed,
+                                'max-h-[500px] opacity-100 pt-3': !isModelSettingsCollapsed,
+                              },
                             )}
-                        </div>
+                          >
+                            <div id="model-selector">
+                              <ModelSelector
+                                key={provider?.name + ':' + modelList.length}
+                                model={model}
+                                setModel={setModel}
+                                modelList={modelList}
+                                provider={provider}
+                                setProvider={setProvider}
+                                providerList={providerList || (PROVIDER_LIST as ProviderInfo[])}
+                                apiKeys={apiKeys}
+                                modelLoading={isModelLoading}
+                              />
+                              {(providerList || []).length > 0 &&
+                                provider &&
+                                (!LOCAL_PROVIDERS.includes(provider.name) || 'OpenAILike') && (
+                                  <APIKeyManager
+                                    provider={provider}
+                                    apiKey={apiKeys[provider.name] || ''}
+                                    setApiKey={(key) => {
+                                      onApiKeysChange(provider.name, key);
+                                    }}
+                                  />
+                                )}
+                            </div>
+                          </div>
+                        </>
                       )}
                     </ClientOnly>
                   </div>
@@ -482,76 +510,97 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                       'relative shadow-xs border border-bolt-elements-borderColor backdrop-blur rounded-lg',
                     )}
                   >
-                    <textarea
-                      ref={textareaRef}
-                      className={classNames(
-                        'w-full pl-4 pt-4 pr-16 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm',
-                        'transition-all duration-200',
-                        'hover:border-bolt-elements-focus',
-                      )}
-                      onDragEnter={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.border = '2px solid #1488fc';
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.border = '2px solid #1488fc';
-                      }}
-                      onDragLeave={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.border = '1px solid var(--bolt-elements-borderColor)';
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.style.border = '1px solid var(--bolt-elements-borderColor)';
+                    <div
+                      className="flex items-center justify-between py-1 px-2 cursor-pointer border-b border-bolt-elements-borderColor"
+                      onClick={() => setIsTextareaCollapsed(!isTextareaCollapsed)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="i-ph:keyboard text-lg text-bolt-elements-textSecondary" />
+                        <span className="text-sm font-medium text-bolt-elements-textSecondary">
+                          {isTextareaCollapsed ? 'Show input' : 'Input area'}
+                        </span>
+                      </div>
+                      <div
+                        className={`i-ph:caret-${isTextareaCollapsed ? 'down' : 'up'} text-lg text-bolt-elements-textSecondary`}
+                      />
+                    </div>
+                    <div
+                      className={classNames('overflow-hidden transition-all duration-300 ease-in-out', {
+                        'max-h-0 opacity-0': isTextareaCollapsed,
+                        'max-h-[500px] opacity-100': !isTextareaCollapsed,
+                      })}
+                    >
+                      <textarea
+                        ref={textareaRef}
+                        className={classNames(
+                          'w-full pl-4 pt-4 pr-16 outline-none resize-none text-bolt-elements-textPrimary placeholder-bolt-elements-textTertiary bg-transparent text-sm',
+                          'transition-all duration-200',
+                          'hover:border-bolt-elements-focus',
+                        )}
+                        onDragEnter={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.border = '2px solid #1488fc';
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.border = '2px solid #1488fc';
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.border = '1px solid var(--bolt-elements-borderColor)';
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.currentTarget.style.border = '1px solid var(--bolt-elements-borderColor)';
 
-                        const files = Array.from(e.dataTransfer.files);
-                        files.forEach((file) => {
-                          if (file.type.startsWith('image/')) {
-                            const reader = new FileReader();
+                          const files = Array.from(e.dataTransfer.files);
+                          files.forEach((file) => {
+                            if (file.type.startsWith('image/')) {
+                              const reader = new FileReader();
 
-                            reader.onload = (e) => {
-                              const base64Image = e.target?.result as string;
-                              setUploadedFiles?.([...uploadedFiles, file]);
-                              setImageDataList?.([...imageDataList, base64Image]);
-                            };
-                            reader.readAsDataURL(file);
+                              reader.onload = (e) => {
+                                const base64Image = e.target?.result as string;
+                                setUploadedFiles?.([...uploadedFiles, file]);
+                                setImageDataList?.([...imageDataList, base64Image]);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          });
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter') {
+                            if (event.shiftKey) {
+                              return;
+                            }
+
+                            event.preventDefault();
+
+                            if (isStreaming) {
+                              handleStop?.();
+                              return;
+                            }
+
+                            // ignore if using input method engine
+                            if (event.nativeEvent.isComposing) {
+                              return;
+                            }
+
+                            handleSendMessage?.(event);
                           }
-                        });
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          if (event.shiftKey) {
-                            return;
-                          }
-
-                          event.preventDefault();
-
-                          if (isStreaming) {
-                            handleStop?.();
-                            return;
-                          }
-
-                          // ignore if using input method engine
-                          if (event.nativeEvent.isComposing) {
-                            return;
-                          }
-
-                          handleSendMessage?.(event);
-                        }
-                      }}
-                      value={input}
-                      onChange={(event) => {
-                        handleInputChange?.(event);
-                      }}
-                      onPaste={handlePaste}
-                      style={{
-                        minHeight: TEXTAREA_MIN_HEIGHT,
-                        maxHeight: TEXTAREA_MAX_HEIGHT,
-                      }}
-                      placeholder="How can Bolt help you today?"
-                      translate="no"
-                    />
+                        }}
+                        value={input}
+                        onChange={(event) => {
+                          handleInputChange?.(event);
+                        }}
+                        onPaste={handlePaste}
+                        style={{
+                          minHeight: TEXTAREA_MIN_HEIGHT,
+                          maxHeight: TEXTAREA_MAX_HEIGHT,
+                        }}
+                        placeholder="How can Bolt help you today?"
+                        translate="no"
+                      />
+                    </div>
                     <ClientOnly>
                       {() => (
                         <SendButton

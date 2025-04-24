@@ -13,12 +13,32 @@ body {
   width: 100%;
 }
 
+/* Apply zoom level to the app */
+body {
+  transform: scale(var(--app-zoom));
+  transform-origin: top left;
+  width: calc(100% / var(--app-zoom));
+  height: calc(100% / var(--app-zoom));
+  overflow-x: hidden;
+}
+
 :root {
-  --gradient-opacity: 0.8;
-  --primary-color: rgba(158, 117, 240, var(--gradient-opacity));
-  --secondary-color: rgba(138, 43, 226, var(--gradient-opacity));
-  --accent-color: rgba(128, 59, 239, var(--gradient-opacity));
-  // --primary-color: rgba(147, 112, 219, var(--gradient-opacity));
-  // --secondary-color: rgba(138, 43, 226, var(--gradient-opacity));
-  // --accent-color: rgba(180, 170, 220, var(--gradient-opacity));
+  --bolt-elements-backgroundDefault: var(--bolt-background);
+  --bolt-elements-background-depth-1: var(--bolt-backgroundDepth1);
+  --bolt-elements-background-depth-2: var(--bolt-backgroundDepth2);
+  --bolt-elements-background-depth-3: var(--bolt-backgroundDepth3);
+  --bolt-elements-textPrimary: var(--bolt-text);
+  --bolt-elements-textSecondary: var(--bolt-textSecondary);
+  --bolt-elements-textTertiary: var(--bolt-textTertiary);
+  --bolt-elements-borderColor: var(--bolt-border);
+  --bolt-elements-focus: var(--bolt-primary);
+  --bolt-elements-loader-progress: var(--bolt-primary);
+  --bolt-elements-item-backgroundDefault: var(--bolt-itemBackgroundDefault);
+  --bolt-elements-item-backgroundActive: var(--bolt-itemBackgroundActive);
+  --bolt-elements-item-backgroundAccent: var(--bolt-itemBackgroundAccent);
+  --bolt-elements-item-contentAccent: var(--bolt-itemContentAccent);
+  --bolt-elements-item-contentDefault: var(--bolt-itemContentDefault);
+
+  /* Zoom level control (default: 1) */
+  --app-zoom: 1;
 }

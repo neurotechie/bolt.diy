@@ -14,6 +14,12 @@ import { useNetlifyDeploy } from '~/components/deploy/NetlifyDeploy.client';
 
 interface HeaderActionButtonsProps {}
 
+// Default, min and max zoom levels
+const DEFAULT_ZOOM = 1;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2;
+const ZOOM_STEP = 0.1;
+
 export function HeaderActionButtons({}: HeaderActionButtonsProps) {
   const showWorkbench = useStore(workbenchStore.showWorkbench);
   const { showChat } = useStore(chatStore);
@@ -32,16 +38,52 @@ export function HeaderActionButtons({}: HeaderActionButtonsProps) {
   const { handleVercelDeploy } = useVercelDeploy();
   const { handleNetlifyDeploy } = useNetlifyDeploy();
 
+  // Zoom state
+  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
+  const [isZoomDropdownOpen, setIsZoomDropdownOpen] = useState(false);
+  const zoomDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Load saved zoom level from localStorage on mount
+    const savedZoom = localStorage.getItem('appZoomLevel');
+    if (savedZoom) {
+      setZoomLevel(parseFloat(savedZoom));
+    }
+  }, []);
+
+  useEffect(() => {
+    // Apply zoom level to the document root element
+    document.documentElement.style.setProperty('--app-zoom', zoomLevel.toString());
+    // Save zoom level to localStorage
+    localStorage.setItem('appZoomLevel', zoomLevel.toString());
+  }, [zoomLevel]);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
+      }
+      if (zoomDropdownRef.current && !zoomDropdownRef.current.contains(event.target as Node)) {
+        setIsZoomDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Zoom control functions
+  const zoomIn = () => {
+    setZoomLevel((prev) => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
+  };
+
+  const zoomOut = () => {
+    setZoomLevel((prev) => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
+  };
+
+  const resetZoom = () => {
+    setZoomLevel(DEFAULT_ZOOM);
+  };
 
   const onVercelDeploy = async () => {
     setIsDeploying(true);
@@ -146,30 +188,25 @@ export function HeaderActionButtons({}: HeaderActionButtonsProps) {
           </div>
         )}
       </div>
-      <div className="flex border border-bolt-elements-borderColor rounded-md overflow-hidden">
+      <div className="flex border border-bolt-elements-borderColor rounded-md overflow-hidden ml-2">
         <Button
-          active={showChat}
-          disabled={!canHideChat || isSmallViewport} // expand button is disabled on mobile as it's not needed
-          onClick={() => {
-            if (canHideChat) {
-              chatStore.setKey('showChat', !showChat);
-            }
-          }}
+          onClick={zoomOut}
+          disabled={zoomLevel <= MIN_ZOOM}
+          className="px-2 hover:bg-bolt-elements-item-backgroundActive"
         >
-          <div className="i-bolt:chat text-sm" />
+          <div className="i-ph:minus-bold text-sm" />
         </Button>
-        <div className="w-[1px] bg-bolt-elements-borderColor" />
-        <Button
-          active={showWorkbench}
-          onClick={() => {
-            if (showWorkbench && !showChat) {
-              chatStore.setKey('showChat', true);
-            }
 
-            workbenchStore.showWorkbench.set(!showWorkbench);
-          }}
+        <div className="flex items-center px-2 text-xs text-bolt-elements-textPrimary">
+          {Math.round(zoomLevel * 100)}%
+        </div>
+
+        <Button
+          onClick={zoomIn}
+          disabled={zoomLevel >= MAX_ZOOM}
+          className="px-2 hover:bg-bolt-elements-item-backgroundActive"
         >
-          <div className="i-ph:code-bold" />
+          <div className="i-ph:plus-bold text-sm" />
         </Button>
       </div>
     </div>

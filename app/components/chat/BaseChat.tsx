@@ -451,7 +451,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                           <div
                             id="model-selector-wrapper"
                             className={classNames(
-                              'overflow-hidden transition-all duration-300 ease-in-out border-t border-bolt-elements-borderColor',
+                              'transition-all duration-300 ease-in-out border-t border-bolt-elements-borderColor',
                               {
                                 'max-h-0 opacity-0 border-transparent': isModelSettingsCollapsed,
                                 'max-h-[500px] opacity-100 pt-3': !isModelSettingsCollapsed,
